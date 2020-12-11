@@ -3,9 +3,9 @@ import {
   Connection,
   errors,
   validate,
-  xrpToDrops,
-  dropsToXrp,
-  iso8601ToRippleTime,
+  xdvToDrops,
+  dropsToXdv,
+  iso8601ToDivvyTime,
   txFlags
 } from './common'
 import {
@@ -76,7 +76,7 @@ import {Instructions, Prepare} from './transaction/types'
 export type APIOptions = {
   server?: string,
   feeCushion?: number,
-  maxFeeXRP?: string,
+  maxFeeXDV?: string,
   trace?: boolean,
   proxy?: string,
   timeout?: number
@@ -99,12 +99,12 @@ function getCollectKeyFromCommand(command: string): string|undefined {
   }
 }
 
-class RippleAPI extends EventEmitter {
+class DivvyAPI extends EventEmitter {
   _feeCushion: number
-  _maxFeeXRP: string
+  _maxFeeXDV: string
 
   // New in > 0.21.0
-  // non-validated ledger versions are allowed, and passed to rippled as-is.
+  // non-validated ledger versions are allowed, and passed to divvyd as-is.
   connection: Connection
 
   // these are exposed only for use by unit tests; they are not part of the API.
@@ -122,7 +122,7 @@ class RippleAPI extends EventEmitter {
     super()
     validate.apiOptions(options)
     this._feeCushion = options.feeCushion || 1.2
-    this._maxFeeXRP = options.maxFeeXRP || '2'
+    this._maxFeeXDV = options.maxFeeXDV || '2'
     const serverURL = options.server
     if (serverURL !== undefined) {
       this.connection = new Connection(serverURL, options)
@@ -183,7 +183,7 @@ class RippleAPI extends EventEmitter {
    * When there are more results than contained in the response, the response
    * includes a `marker` field.
    *
-   * See https://ripple.com/build/rippled-apis/#markers-and-pagination
+   * See https://xdv.io/build/divvyd-apis/#markers-and-pagination
    */
   hasNextPage<T extends {marker?: string}>(currentResponse: T): boolean {
     return !!currentResponse.marker
@@ -236,7 +236,7 @@ class RippleAPI extends EventEmitter {
    * know which response key contains the array of resources.
    *
    * NOTE: This command is used by existing methods and is not recommended for
-   * general use. Instead, use rippled's built-in pagination and make multiple
+   * general use. Instead, use divvyd's built-in pagination and make multiple
    * requests as needed.
    */
   async _requestAll(command: 'account_offers', params: AccountOffersRequest):
@@ -334,9 +334,9 @@ class RippleAPI extends EventEmitter {
   verifyPaymentChannelClaim = verifyPaymentChannelClaim
   errors = errors
 
-  xrpToDrops = xrpToDrops
-  dropsToXrp = dropsToXrp
-  iso8601ToRippleTime = iso8601ToRippleTime
+  xdvToDrops = xdvToDrops
+  dropsToXdv = dropsToXdv
+  iso8601ToDivvyTime = iso8601ToDivvyTime
   txFlags = txFlags
 
   isValidAddress = schemaValidator.isValidAddress
@@ -344,5 +344,5 @@ class RippleAPI extends EventEmitter {
 }
 
 export {
-  RippleAPI
+  DivvyAPI
 }

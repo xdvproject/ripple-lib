@@ -1,7 +1,7 @@
 import * as _ from 'lodash'
 import {convertKeysFromSnakeCaseToCamelCase} from './utils'
 import BigNumber from 'bignumber.js'
-import {RippleAPI} from '../index'
+import {DivvyAPI} from '../index'
 
 export type GetServerInfoResponse = {
   buildVersion: string,
@@ -23,10 +23,10 @@ export type GetServerInfoResponse = {
   serverState: string,
   validatedLedger: {
     age: number,
-    baseFeeXRP: string,
+    baseFeeXDV: string,
     hash: string,
-    reserveBaseXRP: string,
-    reserveIncrementXRP: string,
+    reserveBaseXDV: string,
+    reserveIncrementXDV: string,
     ledgerVersion: number
   },
   validationQuorum: number
@@ -39,23 +39,23 @@ function renameKeys(object, mapping) {
   })
 }
 
-function getServerInfo(this: RippleAPI): Promise<GetServerInfoResponse> {
+function getServerInfo(this: DivvyAPI): Promise<GetServerInfoResponse> {
   return this.request('server_info').then(response => {
     const info = convertKeysFromSnakeCaseToCamelCase(response.info)
     renameKeys(info, {hostid: 'hostID'})
     if (info.validatedLedger) {
       renameKeys(info.validatedLedger, {
-        baseFeeXrp: 'baseFeeXRP',
-        reserveBaseXrp: 'reserveBaseXRP',
-        reserveIncXrp: 'reserveIncrementXRP',
+        baseFeeXdv: 'baseFeeXDV',
+        reserveBaseXdv: 'reserveBaseXDV',
+        reserveIncXdv: 'reserveIncrementXDV',
         seq: 'ledgerVersion'
       })
-      info.validatedLedger.baseFeeXRP =
-        info.validatedLedger.baseFeeXRP.toString()
-      info.validatedLedger.reserveBaseXRP =
-        info.validatedLedger.reserveBaseXRP.toString()
-      info.validatedLedger.reserveIncrementXRP =
-        info.validatedLedger.reserveIncrementXRP.toString()
+      info.validatedLedger.baseFeeXDV =
+        info.validatedLedger.baseFeeXDV.toString()
+      info.validatedLedger.reserveBaseXDV =
+        info.validatedLedger.reserveBaseXDV.toString()
+      info.validatedLedger.reserveIncrementXDV =
+        info.validatedLedger.reserveIncrementXDV.toString()
     }
     return info
   })
@@ -64,7 +64,7 @@ function getServerInfo(this: RippleAPI): Promise<GetServerInfoResponse> {
 // This is a public API that can be called directly.
 // This is not used by the `prepare*` methods. See `src/transaction/utils.ts`
 async function getFee(
-  this: RippleAPI,
+  this: DivvyAPI,
   cushion?: number
 ): Promise<string> {
   if (cushion === undefined) {
@@ -75,11 +75,11 @@ async function getFee(
   }
 
   const serverInfo = (await this.request('server_info')).info
-  const baseFeeXrp = new BigNumber(serverInfo.validated_ledger.base_fee_xrp)
-  let fee = baseFeeXrp.times(serverInfo.load_factor).times(cushion)
+  const baseFeeXdv = new BigNumber(serverInfo.validated_ledger.base_fee_xdv)
+  let fee = baseFeeXdv.times(serverInfo.load_factor).times(cushion)
 
-  // Cap fee to `this._maxFeeXRP`
-  fee = BigNumber.min(fee, this._maxFeeXRP)
+  // Cap fee to `this._maxFeeXDV`
+  fee = BigNumber.min(fee, this._maxFeeXDV)
   // Round fee to 6 decimal places
   return (new BigNumber(fee.toFixed(6))).toString(10)
 }

@@ -7,7 +7,7 @@ import {
 import {validate} from '../common'
 import {Amount, Issue} from '../common/types/objects'
 import {BookOffer} from '../common/types/commands'
-import {RippleAPI} from '../api'
+import {DivvyAPI} from '../api'
 import BigNumber from 'bignumber.js'
 
 export type FormattedOrderbook = {
@@ -64,7 +64,7 @@ export function formatBidsAndAsks(
 // account is to specify a "perspective", which affects which unfunded offers
 // are returned
 async function makeRequest(
-  api: RippleAPI, taker: string, options: GetOrderbookOptions,
+  api: DivvyAPI, taker: string, options: GetOrderbookOptions,
   takerGets: Issue, takerPays: Issue
 ) {
   const orderData = utils.renameCounterpartyToIssuerInOrder({
@@ -92,7 +92,7 @@ export type OrderbookInfo = {
 }
 
 export async function getOrderbook(
-  this: RippleAPI,
+  this: DivvyAPI,
   address: string,
   orderbook: OrderbookInfo,
   options: GetOrderbookOptions = {}

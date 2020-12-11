@@ -1,0 +1,47 @@
+## xdvToDrops
+
+`xdvToDrops(xdv: string | BigNumber): string`
+
+Converts an XDV amount to drops. 1 XDV = 1,000,000 drops, so 1 drop = 0.000001 XDV. This method is useful when converting amounts for use with the divvyd API, which requires XDV amounts to be specified in drops.
+
+### Parameters
+
+`xdv`: A string or BigNumber representing an amount of XDV. If `xdv` is a string, it may start with `-`, must contain at least one number, and may contain up to one `.`. This method throws a `ValidationError` for invalid input.
+
+### Return Value
+
+A string representing an equivalent amount of drops.
+
+### Example
+
+```javascript
+return api.xdvToDrops('1');
+```
+
+```json
+'1000000'
+```
+
+## dropsToXdv
+
+`dropsToXdv(drops: string | BigNumber): string`
+
+Converts an amount of drops to XDV. 1 drop = 0.000001 XDV, so 1 XDV = 1,000,000 drops. This method is useful when converting amounts from the divvyd API, which describes XDV amounts in drops.
+
+### Parameters
+
+`drops`: A string or BigNumber representing an amount of drops. If `drops` is a string, it may start with `-` and must contain at least one number. This method throws a `ValidationError` for invalid input.
+
+### Return Value
+
+A string representing an equivalent amount of XDV.
+
+### Example
+
+```javascript
+return api.dropsToXdv('1');
+```
+
+```json
+'0.000001'
+```

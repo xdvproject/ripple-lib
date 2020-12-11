@@ -3,18 +3,18 @@
 const _ = require('lodash');
 const assert = require('assert-diff');
 const setupAPI = require('./setup-api');
-const RippleAPI = require('ripple-api').RippleAPI;
-const validate = RippleAPI._PRIVATE.validate;
+const DivvyAPI = require('divvy-api').DivvyAPI;
+const validate = DivvyAPI._PRIVATE.validate;
 const fixtures = require('./fixtures');
 const requests = fixtures.requests;
 const responses = fixtures.responses;
 const addresses = require('./fixtures/addresses');
 const hashes = require('./fixtures/hashes');
 const address = addresses.ACCOUNT;
-const utils = RippleAPI._PRIVATE.ledgerUtils;
-const ledgerClosed = require('./fixtures/rippled/ledger-close-newer');
-const schemaValidator = RippleAPI._PRIVATE.schemaValidator;
-const binary = require('ripple-binary-codec');
+const utils = DivvyAPI._PRIVATE.ledgerUtils;
+const ledgerClosed = require('./fixtures/divvyd/ledger-close-newer');
+const schemaValidator = DivvyAPI._PRIVATE.schemaValidator;
+const binary = require('divvy-binary-codec');
 const BigNumber = require('bignumber.js')
 assert.options.strict = true;
 
@@ -45,233 +45,233 @@ function checkResult(expected, schemaName, response) {
 }
 
 
-describe('RippleAPI', function () {
+describe('DivvyAPI', function () {
   this.timeout(TIMEOUT);
   const instructions = { maxLedgerVersionOffset: 100 };
   beforeEach(setupAPI.setup);
   afterEach(setupAPI.teardown);
 
   it('error inspect', function () {
-    const error = new this.api.errors.RippleError('mess', { data: 1 });
-    assert.strictEqual(error.inspect(), '[RippleError(mess, { data: 1 })]');
+    const error = new this.api.errors.DivvyError('mess', { data: 1 });
+    assert.strictEqual(error.inspect(), '[DivvyError(mess, { data: 1 })]');
   });
 
-  describe('xrpToDrops', function () {
+  describe('xdvToDrops', function () {
     it('works with a typical amount', function () {
-      const drops = this.api.xrpToDrops('2')
-      assert.strictEqual(drops, '2000000', '2 XRP equals 2 million drops')
+      const drops = this.api.xdvToDrops('2')
+      assert.strictEqual(drops, '2000000', '2 XDV equals 2 million drops')
     })
 
     it('works with fractions', function () {
-      let drops = this.api.xrpToDrops('3.456789')
-      assert.strictEqual(drops, '3456789', '3.456789 XRP equals 3,456,789 drops')
+      let drops = this.api.xdvToDrops('3.456789')
+      assert.strictEqual(drops, '3456789', '3.456789 XDV equals 3,456,789 drops')
 
-      drops = this.api.xrpToDrops('3.400000')
-      assert.strictEqual(drops, '3400000', '3.400000 XRP equals 3,400,000 drops')
+      drops = this.api.xdvToDrops('3.400000')
+      assert.strictEqual(drops, '3400000', '3.400000 XDV equals 3,400,000 drops')
 
-      drops = this.api.xrpToDrops('0.000001')
-      assert.strictEqual(drops, '1', '0.000001 XRP equals 1 drop')
+      drops = this.api.xdvToDrops('0.000001')
+      assert.strictEqual(drops, '1', '0.000001 XDV equals 1 drop')
 
-      drops = this.api.xrpToDrops('0.0000010')
-      assert.strictEqual(drops, '1', '0.0000010 XRP equals 1 drop')
+      drops = this.api.xdvToDrops('0.0000010')
+      assert.strictEqual(drops, '1', '0.0000010 XDV equals 1 drop')
     })
 
     it('works with zero', function () {
-      let drops = this.api.xrpToDrops('0')
-      assert.strictEqual(drops, '0', '0 XRP equals 0 drops')
+      let drops = this.api.xdvToDrops('0')
+      assert.strictEqual(drops, '0', '0 XDV equals 0 drops')
 
       // negative zero is equivalent to zero
-      drops = this.api.xrpToDrops('-0')
-      assert.strictEqual(drops, '0', '-0 XRP equals 0 drops')
+      drops = this.api.xdvToDrops('-0')
+      assert.strictEqual(drops, '0', '-0 XDV equals 0 drops')
 
-      drops = this.api.xrpToDrops('0.000000')
-      assert.strictEqual(drops, '0', '0.000000 XRP equals 0 drops')
+      drops = this.api.xdvToDrops('0.000000')
+      assert.strictEqual(drops, '0', '0.000000 XDV equals 0 drops')
 
-      drops = this.api.xrpToDrops('0.0000000')
-      assert.strictEqual(drops, '0', '0.0000000 XRP equals 0 drops')
+      drops = this.api.xdvToDrops('0.0000000')
+      assert.strictEqual(drops, '0', '0.0000000 XDV equals 0 drops')
     })
 
     it('works with a negative value', function () {
-      const drops = this.api.xrpToDrops('-2')
-      assert.strictEqual(drops, '-2000000', '-2 XRP equals -2 million drops')
+      const drops = this.api.xdvToDrops('-2')
+      assert.strictEqual(drops, '-2000000', '-2 XDV equals -2 million drops')
     })
 
     it('works with a value ending with a decimal point', function () {
-      let drops = this.api.xrpToDrops('2.')
-      assert.strictEqual(drops, '2000000', '2. XRP equals 2000000 drops')
+      let drops = this.api.xdvToDrops('2.')
+      assert.strictEqual(drops, '2000000', '2. XDV equals 2000000 drops')
 
-      drops = this.api.xrpToDrops('-2.')
-      assert.strictEqual(drops, '-2000000', '-2. XRP equals -2000000 drops')
+      drops = this.api.xdvToDrops('-2.')
+      assert.strictEqual(drops, '-2000000', '-2. XDV equals -2000000 drops')
     })
 
     it('works with BigNumber objects', function () {
-      let drops = this.api.xrpToDrops(new BigNumber(2))
-      assert.strictEqual(drops, '2000000', '(BigNumber) 2 XRP equals 2 million drops')
+      let drops = this.api.xdvToDrops(new BigNumber(2))
+      assert.strictEqual(drops, '2000000', '(BigNumber) 2 XDV equals 2 million drops')
 
-      drops = this.api.xrpToDrops(new BigNumber(-2))
-      assert.strictEqual(drops, '-2000000', '(BigNumber) -2 XRP equals -2 million drops')
+      drops = this.api.xdvToDrops(new BigNumber(-2))
+      assert.strictEqual(drops, '-2000000', '(BigNumber) -2 XDV equals -2 million drops')
     })
 
     it('works with a number', function() {
       // This is not recommended. Use strings or BigNumber objects to avoid precision errors.
 
-      let drops = this.api.xrpToDrops(2)
-      assert.strictEqual(drops, '2000000', '(number) 2 XRP equals 2 million drops')
+      let drops = this.api.xdvToDrops(2)
+      assert.strictEqual(drops, '2000000', '(number) 2 XDV equals 2 million drops')
 
-      drops = this.api.xrpToDrops(-2)
-      assert.strictEqual(drops, '-2000000', '(number) -2 XRP equals -2 million drops')
+      drops = this.api.xdvToDrops(-2)
+      assert.strictEqual(drops, '-2000000', '(number) -2 XDV equals -2 million drops')
     })
 
     it('throws with an amount with too many decimal places', function () {
       assert.throws(() => {
-        this.api.xrpToDrops('1.1234567')
+        this.api.xdvToDrops('1.1234567')
       }, /has too many decimal places/)
 
       assert.throws(() => {
-        this.api.xrpToDrops('0.0000001')
+        this.api.xdvToDrops('0.0000001')
       }, /has too many decimal places/)
     })
 
     it('throws with an invalid value', function () {
       assert.throws(() => {
-        this.api.xrpToDrops('FOO')
+        this.api.xdvToDrops('FOO')
       }, /invalid value/)
 
       assert.throws(() => {
-        this.api.xrpToDrops('1e-7')
+        this.api.xdvToDrops('1e-7')
       }, /invalid value/)
 
       assert.throws(() => {
-        this.api.xrpToDrops('2,0')
+        this.api.xdvToDrops('2,0')
       }, /invalid value/)
 
       assert.throws(() => {
-        this.api.xrpToDrops('.')
-      }, /xrpToDrops\: invalid value '\.', should be a BigNumber or string-encoded number\./)
+        this.api.xdvToDrops('.')
+      }, /xdvToDrops\: invalid value '\.', should be a BigNumber or string-encoded number\./)
     })
 
     it('throws with an amount more than one decimal point', function () {
       assert.throws(() => {
-        this.api.xrpToDrops('1.0.0')
-      }, /xrpToDrops:\ invalid\ value\ '1\.0\.0'\,\ should\ be\ a\ number\ matching\ \(\^\-\?\[0\-9\]\*\.\?\[0\-9\]\*\$\)\./)
+        this.api.xdvToDrops('1.0.0')
+      }, /xdvToDrops:\ invalid\ value\ '1\.0\.0'\,\ should\ be\ a\ number\ matching\ \(\^\-\?\[0\-9\]\*\.\?\[0\-9\]\*\$\)\./)
 
       assert.throws(() => {
-        this.api.xrpToDrops('...')
-      }, /xrpToDrops:\ invalid\ value\ '\.\.\.'\,\ should\ be\ a\ number\ matching\ \(\^\-\?\[0\-9\]\*\.\?\[0\-9\]\*\$\)\./)
+        this.api.xdvToDrops('...')
+      }, /xdvToDrops:\ invalid\ value\ '\.\.\.'\,\ should\ be\ a\ number\ matching\ \(\^\-\?\[0\-9\]\*\.\?\[0\-9\]\*\$\)\./)
     })
   })
 
-  describe('dropsToXrp', function () {
+  describe('dropsToXdv', function () {
     it('works with a typical amount', function () {
-      const xrp = this.api.dropsToXrp('2000000')
-      assert.strictEqual(xrp, '2', '2 million drops equals 2 XRP')
+      const xdv = this.api.dropsToXdv('2000000')
+      assert.strictEqual(xdv, '2', '2 million drops equals 2 XDV')
     })
 
     it('works with fractions', function () {
-      let xrp = this.api.dropsToXrp('3456789')
-      assert.strictEqual(xrp, '3.456789', '3,456,789 drops equals 3.456789 XRP')
+      let xdv = this.api.dropsToXdv('3456789')
+      assert.strictEqual(xdv, '3.456789', '3,456,789 drops equals 3.456789 XDV')
 
-      xrp = this.api.dropsToXrp('3400000')
-      assert.strictEqual(xrp, '3.4', '3,400,000 drops equals 3.4 XRP')
+      xdv = this.api.dropsToXdv('3400000')
+      assert.strictEqual(xdv, '3.4', '3,400,000 drops equals 3.4 XDV')
 
-      xrp = this.api.dropsToXrp('1')
-      assert.strictEqual(xrp, '0.000001', '1 drop equals 0.000001 XRP')
+      xdv = this.api.dropsToXdv('1')
+      assert.strictEqual(xdv, '0.000001', '1 drop equals 0.000001 XDV')
 
-      xrp = this.api.dropsToXrp('1.0')
-      assert.strictEqual(xrp, '0.000001', '1.0 drops equals 0.000001 XRP')
+      xdv = this.api.dropsToXdv('1.0')
+      assert.strictEqual(xdv, '0.000001', '1.0 drops equals 0.000001 XDV')
 
-      xrp = this.api.dropsToXrp('1.00')
-      assert.strictEqual(xrp, '0.000001', '1.00 drops equals 0.000001 XRP')
+      xdv = this.api.dropsToXdv('1.00')
+      assert.strictEqual(xdv, '0.000001', '1.00 drops equals 0.000001 XDV')
     })
 
     it('works with zero', function () {
-      let xrp = this.api.dropsToXrp('0')
-      assert.strictEqual(xrp, '0', '0 drops equals 0 XRP')
+      let xdv = this.api.dropsToXdv('0')
+      assert.strictEqual(xdv, '0', '0 drops equals 0 XDV')
 
       // negative zero is equivalent to zero
-      xrp = this.api.dropsToXrp('-0')
-      assert.strictEqual(xrp, '0', '-0 drops equals 0 XRP')
+      xdv = this.api.dropsToXdv('-0')
+      assert.strictEqual(xdv, '0', '-0 drops equals 0 XDV')
 
-      xrp = this.api.dropsToXrp('0.00')
-      assert.strictEqual(xrp, '0', '0.00 drops equals 0 XRP')
+      xdv = this.api.dropsToXdv('0.00')
+      assert.strictEqual(xdv, '0', '0.00 drops equals 0 XDV')
 
-      xrp = this.api.dropsToXrp('000000000')
-      assert.strictEqual(xrp, '0', '000000000 drops equals 0 XRP')
+      xdv = this.api.dropsToXdv('000000000')
+      assert.strictEqual(xdv, '0', '000000000 drops equals 0 XDV')
     })
 
     it('works with a negative value', function () {
-      const xrp = this.api.dropsToXrp('-2000000')
-      assert.strictEqual(xrp, '-2', '-2 million drops equals -2 XRP')
+      const xdv = this.api.dropsToXdv('-2000000')
+      assert.strictEqual(xdv, '-2', '-2 million drops equals -2 XDV')
     })
 
     it('works with a value ending with a decimal point', function () {
-      let xrp = this.api.dropsToXrp('2000000.')
-      assert.strictEqual(xrp, '2', '2000000. drops equals 2 XRP')
+      let xdv = this.api.dropsToXdv('2000000.')
+      assert.strictEqual(xdv, '2', '2000000. drops equals 2 XDV')
 
-      xrp = this.api.dropsToXrp('-2000000.')
-      assert.strictEqual(xrp, '-2', '-2000000. drops equals -2 XRP')
+      xdv = this.api.dropsToXdv('-2000000.')
+      assert.strictEqual(xdv, '-2', '-2000000. drops equals -2 XDV')
     })
 
     it('works with BigNumber objects', function () {
-      let xrp = this.api.dropsToXrp(new BigNumber(2000000))
-      assert.strictEqual(xrp, '2', '(BigNumber) 2 million drops equals 2 XRP')
+      let xdv = this.api.dropsToXdv(new BigNumber(2000000))
+      assert.strictEqual(xdv, '2', '(BigNumber) 2 million drops equals 2 XDV')
 
-      xrp = this.api.dropsToXrp(new BigNumber(-2000000))
-      assert.strictEqual(xrp, '-2', '(BigNumber) -2 million drops equals -2 XRP')
+      xdv = this.api.dropsToXdv(new BigNumber(-2000000))
+      assert.strictEqual(xdv, '-2', '(BigNumber) -2 million drops equals -2 XDV')
 
-      xrp = this.api.dropsToXrp(new BigNumber(2345678))
-      assert.strictEqual(xrp, '2.345678', '(BigNumber) 2,345,678 drops equals 2.345678 XRP')
+      xdv = this.api.dropsToXdv(new BigNumber(2345678))
+      assert.strictEqual(xdv, '2.345678', '(BigNumber) 2,345,678 drops equals 2.345678 XDV')
 
-      xrp = this.api.dropsToXrp(new BigNumber(-2345678))
-      assert.strictEqual(xrp, '-2.345678', '(BigNumber) -2,345,678 drops equals -2.345678 XRP')
+      xdv = this.api.dropsToXdv(new BigNumber(-2345678))
+      assert.strictEqual(xdv, '-2.345678', '(BigNumber) -2,345,678 drops equals -2.345678 XDV')
     })
 
     it('works with a number', function() {
       // This is not recommended. Use strings or BigNumber objects to avoid precision errors.
 
-      let xrp = this.api.dropsToXrp(2000000)
-      assert.strictEqual(xrp, '2', '(number) 2 million drops equals 2 XRP')
+      let xdv = this.api.dropsToXdv(2000000)
+      assert.strictEqual(xdv, '2', '(number) 2 million drops equals 2 XDV')
 
-      xrp = this.api.dropsToXrp(-2000000)
-      assert.strictEqual(xrp, '-2', '(number) -2 million drops equals -2 XRP')
+      xdv = this.api.dropsToXdv(-2000000)
+      assert.strictEqual(xdv, '-2', '(number) -2 million drops equals -2 XDV')
     })
 
     it('throws with an amount with too many decimal places', function () {
       assert.throws(() => {
-        this.api.dropsToXrp('1.2')
+        this.api.dropsToXdv('1.2')
       }, /has too many decimal places/)
 
       assert.throws(() => {
-        this.api.dropsToXrp('0.10')
+        this.api.dropsToXdv('0.10')
       }, /has too many decimal places/)
     })
 
     it('throws with an invalid value', function () {
       assert.throws(() => {
-        this.api.dropsToXrp('FOO')
+        this.api.dropsToXdv('FOO')
       }, /invalid value/)
 
       assert.throws(() => {
-        this.api.dropsToXrp('1e-7')
+        this.api.dropsToXdv('1e-7')
       }, /invalid value/)
 
       assert.throws(() => {
-        this.api.dropsToXrp('2,0')
+        this.api.dropsToXdv('2,0')
       }, /invalid value/)
 
       assert.throws(() => {
-        this.api.dropsToXrp('.')
-      }, /dropsToXrp\: invalid value '\.', should be a BigNumber or string-encoded number\./)
+        this.api.dropsToXdv('.')
+      }, /dropsToXdv\: invalid value '\.', should be a BigNumber or string-encoded number\./)
     })
 
     it('throws with an amount more than one decimal point', function () {
       assert.throws(() => {
-        this.api.dropsToXrp('1.0.0')
-      }, /dropsToXrp:\ invalid\ value\ '1\.0\.0'\,\ should\ be\ a\ number\ matching\ \(\^\-\?\[0\-9\]\*\.\?\[0\-9\]\*\$\)\./)
+        this.api.dropsToXdv('1.0.0')
+      }, /dropsToXdv:\ invalid\ value\ '1\.0\.0'\,\ should\ be\ a\ number\ matching\ \(\^\-\?\[0\-9\]\*\.\?\[0\-9\]\*\$\)\./)
 
       assert.throws(() => {
-        this.api.dropsToXrp('...')
-      }, /dropsToXrp:\ invalid\ value\ '\.\.\.'\,\ should\ be\ a\ number\ matching\ \(\^\-\?\[0\-9\]\*\.\?\[0\-9\]\*\$\)\./)
+        this.api.dropsToXdv('...')
+      }, /dropsToXdv:\ invalid\ value\ '\.\.\.'\,\ should\ be\ a\ number\ matching\ \(\^\-\?\[0\-9\]\*\.\?\[0\-9\]\*\$\)\./)
     })
   })
 
@@ -382,37 +382,37 @@ describe('RippleAPI', function () {
           _.partial(checkResult, responses.preparePayment.normal, 'prepare'));
     });
 
-    it('preparePayment - min amount xrp', function () {
+    it('preparePayment - min amount xdv', function () {
       const localInstructions = _.defaults({
         maxFee: '0.000012'
       }, instructions);
       return this.api.preparePayment(
-        address, requests.preparePayment.minAmountXRP, localInstructions).then(
+        address, requests.preparePayment.minAmountXDV, localInstructions).then(
           _.partial(checkResult,
-            responses.preparePayment.minAmountXRP, 'prepare'));
+            responses.preparePayment.minAmountXDV, 'prepare'));
     });
 
-    it('preparePayment - min amount xrp2xrp', function () {
+    it('preparePayment - min amount xdv2xdv', function () {
       return this.api.preparePayment(
         address, requests.preparePayment.minAmount, instructions).then(
           _.partial(checkResult,
-            responses.preparePayment.minAmountXRPXRP, 'prepare'));
+            responses.preparePayment.minAmountXDVXDV, 'prepare'));
     });
 
-    it('preparePayment - XRP to XRP', function () {
+    it('preparePayment - XDV to XDV', function () {
       const payment = {
         "source": {
           "address": "r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59",
           "maxAmount": {
             "value": "1",
-            "currency": "XRP"
+            "currency": "XDV"
           }
         },
         "destination": {
           "address": "rpZc4mVfWUif9CRoHRKKcmhu1nx2xktxBo",
           "amount": {
             "value": "1",
-            "currency": "XRP"
+            "currency": "XDV"
           }
         }
       }
@@ -429,73 +429,13 @@ describe('RippleAPI', function () {
       })
     });
 
-    it('preparePayment - XRP drops to XRP drops', function () {
+    it('preparePayment - XDV drops to XDV drops', function () {
       const payment = {
         "source": {
           "address": "r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59",
           "maxAmount": {
             "value": "1000000",
             "currency": "drops"
-          }
-        },
-        "destination": {
-          "address": "rpZc4mVfWUif9CRoHRKKcmhu1nx2xktxBo",
-          "amount": {
-            "value": "1000000",
-            "currency": "drops"
-          }
-        }
-      }
-      return this.api.preparePayment(address, payment, instructions).then(response => {
-        const expected = {
-          txJSON: '{"TransactionType":"Payment","Account":"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59","Destination":"rpZc4mVfWUif9CRoHRKKcmhu1nx2xktxBo","Amount":"1000000","Flags":2147483648,"LastLedgerSequence":8820051,"Sequence":23,"Fee":"12"}',
-          instructions: {
-            fee: '0.000012',
-            sequence: 23,
-            maxLedgerVersion: 8820051
-          }
-        }
-        return checkResult(expected, 'prepare', response)
-      })
-    });
-
-    it('preparePayment - XRP drops to XRP', function () {
-      const payment = {
-        "source": {
-          "address": "r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59",
-          "maxAmount": {
-            "value": "1000000",
-            "currency": "drops"
-          }
-        },
-        "destination": {
-          "address": "rpZc4mVfWUif9CRoHRKKcmhu1nx2xktxBo",
-          "amount": {
-            "value": "1",
-            "currency": "XRP"
-          }
-        }
-      }
-      return this.api.preparePayment(address, payment, instructions).then(response => {
-        const expected = {
-          txJSON: '{"TransactionType":"Payment","Account":"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59","Destination":"rpZc4mVfWUif9CRoHRKKcmhu1nx2xktxBo","Amount":"1000000","Flags":2147483648,"LastLedgerSequence":8820051,"Sequence":23,"Fee":"12"}',
-          instructions: {
-            fee: '0.000012',
-            sequence: 23,
-            maxLedgerVersion: 8820051
-          }
-        }
-        return checkResult(expected, 'prepare', response)
-      })
-    });
-
-    it('preparePayment - XRP to XRP drops', function () {
-      const payment = {
-        "source": {
-          "address": "r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59",
-          "maxAmount": {
-            "value": "1",
-            "currency": "XRP"
           }
         },
         "destination": {
@@ -519,10 +459,70 @@ describe('RippleAPI', function () {
       })
     });
 
-    it('preparePayment - XRP to XRP no partial', function () {
+    it('preparePayment - XDV drops to XDV', function () {
+      const payment = {
+        "source": {
+          "address": "r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59",
+          "maxAmount": {
+            "value": "1000000",
+            "currency": "drops"
+          }
+        },
+        "destination": {
+          "address": "rpZc4mVfWUif9CRoHRKKcmhu1nx2xktxBo",
+          "amount": {
+            "value": "1",
+            "currency": "XDV"
+          }
+        }
+      }
+      return this.api.preparePayment(address, payment, instructions).then(response => {
+        const expected = {
+          txJSON: '{"TransactionType":"Payment","Account":"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59","Destination":"rpZc4mVfWUif9CRoHRKKcmhu1nx2xktxBo","Amount":"1000000","Flags":2147483648,"LastLedgerSequence":8820051,"Sequence":23,"Fee":"12"}',
+          instructions: {
+            fee: '0.000012',
+            sequence: 23,
+            maxLedgerVersion: 8820051
+          }
+        }
+        return checkResult(expected, 'prepare', response)
+      })
+    });
+
+    it('preparePayment - XDV to XDV drops', function () {
+      const payment = {
+        "source": {
+          "address": "r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59",
+          "maxAmount": {
+            "value": "1",
+            "currency": "XDV"
+          }
+        },
+        "destination": {
+          "address": "rpZc4mVfWUif9CRoHRKKcmhu1nx2xktxBo",
+          "amount": {
+            "value": "1000000",
+            "currency": "drops"
+          }
+        }
+      }
+      return this.api.preparePayment(address, payment, instructions).then(response => {
+        const expected = {
+          txJSON: '{"TransactionType":"Payment","Account":"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59","Destination":"rpZc4mVfWUif9CRoHRKKcmhu1nx2xktxBo","Amount":"1000000","Flags":2147483648,"LastLedgerSequence":8820051,"Sequence":23,"Fee":"12"}',
+          instructions: {
+            fee: '0.000012',
+            sequence: 23,
+            maxLedgerVersion: 8820051
+          }
+        }
+        return checkResult(expected, 'prepare', response)
+      })
+    });
+
+    it('preparePayment - XDV to XDV no partial', function () {
       assert.throws(() => {
         this.api.preparePayment(address, requests.preparePayment.wrongPartial);
-      }, /XRP to XRP payments cannot be partial payments/);
+      }, /XDV to XDV payments cannot be partial payments/);
     });
 
     it('preparePayment - address must match payment.source.address', function (
@@ -565,7 +565,7 @@ describe('RippleAPI', function () {
           responses.preparePayment.minAmount, 'prepare'));
     });
 
-    it('preparePayment - throws when fee exceeds 2 XRP', function () {
+    it('preparePayment - throws when fee exceeds 2 XDV', function () {
       const localInstructions = _.defaults({
         fee: '2.1'
       }, instructions);
@@ -573,10 +573,10 @@ describe('RippleAPI', function () {
       assert.throws(() => {
         this.api.preparePayment(
           address, requests.preparePayment.normal, localInstructions)
-      }, /Fee of 2\.1 XRP exceeds max of 2 XRP\. To use this fee, increase `maxFeeXRP` in the RippleAPI constructor\./)
+      }, /Fee of 2\.1 XDV exceeds max of 2 XDV\. To use this fee, increase `maxFeeXDV` in the DivvyAPI constructor\./)
     });
 
-    it('preparePayment - caps fee at 2 XRP by default', function () {
+    it('preparePayment - caps fee at 2 XDV by default', function () {
       this.api._feeCushion = 1000000;
 
       const expectedResponse = {
@@ -593,8 +593,8 @@ describe('RippleAPI', function () {
           _.partial(checkResult, expectedResponse, 'prepare'));
     });
 
-    it('preparePayment - allows fee exceeding 2 XRP when maxFeeXRP is higher', function () {
-      this.api._maxFeeXRP = '2.2'
+    it('preparePayment - allows fee exceeding 2 XDV when maxFeeXDV is higher', function () {
+      this.api._maxFeeXDV = '2.2'
       const localInstructions = _.defaults({
         fee: '2.1'
       }, instructions);
@@ -964,7 +964,7 @@ describe('RippleAPI', function () {
     });
 
     // prepareTransaction - Payment
-    it('min amount xrp', function () {
+    it('min amount xdv', function () {
       const localInstructions = _.defaults({
         maxFee: '0.000012'
       }, instructions);
@@ -974,7 +974,7 @@ describe('RippleAPI', function () {
         Account: address,
         Destination: 'rpZc4mVfWUif9CRoHRKKcmhu1nx2xktxBo',
 
-        // Max amount to send. Use 100 billion XRP to
+        // Max amount to send. Use 100 billion XDV to
         // ensure that we send the full SendMax amount.
         Amount: '100000000000000000',
 
@@ -989,11 +989,11 @@ describe('RippleAPI', function () {
       
       return this.api.prepareTransaction(txJSON, localInstructions).then(
           _.partial(checkResult,
-            responses.preparePayment.minAmountXRP, 'prepare'));
+            responses.preparePayment.minAmountXDV, 'prepare'));
     });
 
     // prepareTransaction - Payment
-    it('min amount xrp2xrp', function () {
+    it('min amount xdv2xdv', function () {
       const txJSON = {
         TransactionType: 'Payment',
         Account: address,
@@ -1003,7 +1003,7 @@ describe('RippleAPI', function () {
       }
       return this.api.prepareTransaction(txJSON, instructions).then(
           _.partial(checkResult,
-            responses.preparePayment.minAmountXRPXRP, 'prepare'));
+            responses.preparePayment.minAmountXDVXDV, 'prepare'));
     });
 
     // prepareTransaction - Payment
@@ -1030,7 +1030,7 @@ describe('RippleAPI', function () {
               }
             }
           ],
-          Flags: 0 | this.api.txFlags.Payment.NoRippleDirect | this.api.txFlags.Payment.LimitQuality
+          Flags: 0 | this.api.txFlags.Payment.NoDivvyDirect | this.api.txFlags.Payment.LimitQuality
         }
         return this.api.prepareTransaction(txJSON, localInstructions).then(
             _.partial(checkResult,
@@ -1039,7 +1039,7 @@ describe('RippleAPI', function () {
     });
 
     // prepareTransaction - Payment
-    it('fee is capped at default maxFee of 2 XRP', function () {
+    it('fee is capped at default maxFee of 2 XDV', function () {
       this.api._feeCushion = 1000000;
 
       const txJSON = {
@@ -1079,11 +1079,11 @@ describe('RippleAPI', function () {
     });
   
     // prepareTransaction - Payment
-    it('fee is capped to custom maxFeeXRP when maxFee exceeds maxFeeXRP', function () {
+    it('fee is capped to custom maxFeeXDV when maxFee exceeds maxFeeXDV', function () {
       this.api._feeCushion = 1000000
-      this.api._maxFeeXRP = '3'
+      this.api._maxFeeXDV = '3'
       const localInstructions = _.defaults({
-        maxFee: '4' // We are testing that this does not matter; fee is still capped to maxFeeXRP
+        maxFee: '4' // We are testing that this does not matter; fee is still capped to maxFeeXDV
       }, instructions);
 
       const txJSON = {
@@ -1121,9 +1121,9 @@ describe('RippleAPI', function () {
     // prepareTransaction - Payment
     it('fee is capped to maxFee', function () {
       this.api._feeCushion = 1000000
-      this.api._maxFeeXRP = '5'
+      this.api._maxFeeXDV = '5'
       const localInstructions = _.defaults({
-        maxFee: '4' // maxFeeXRP does not matter if maxFee is lower than maxFeeXRP
+        maxFee: '4' // maxFeeXDV does not matter if maxFee is lower than maxFeeXDV
       }, instructions);
 
       const txJSON = {
@@ -1186,12 +1186,12 @@ describe('RippleAPI', function () {
     return this.api.prepareTransaction({
       Account: address,
       TransactionType: 'PaymentChannelCreate',
-      Amount: '1000000', // 1 XRP in drops. Use a string-encoded integer.
+      Amount: '1000000', // 1 XDV in drops. Use a string-encoded integer.
       Destination: 'rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW',
       SettleDelay: 86400,
       PublicKey: '32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A'
-      // If cancelAfter is used, you must use RippleTime.
-      // You can use `iso8601ToRippleTime()` to convert to RippleTime.
+      // If cancelAfter is used, you must use DivvyTime.
+      // You can use `iso8601ToDivvyTime()` to convert to DivvyTime.
 
       // Other fields are available (but not used in this test),
       // including `sourceTag` and `destinationTag`.
@@ -1204,14 +1204,14 @@ describe('RippleAPI', function () {
     const txJSON = {
       Account: address,
       TransactionType: 'PaymentChannelCreate',
-      Amount: this.api.xrpToDrops('1'), // or '1000000'
+      Amount: this.api.xdvToDrops('1'), // or '1000000'
       Destination: 'rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW',
       SettleDelay: 86400,
 
       // Ensure this is in upper case if it is not already
       PublicKey: '32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A'.toUpperCase(),
 
-      CancelAfter: this.api.iso8601ToRippleTime('2017-02-17T15:04:57Z'),
+      CancelAfter: this.api.iso8601ToDivvyTime('2017-02-17T15:04:57Z'),
       SourceTag: 11747,
       DestinationTag: 23480
     }
@@ -1230,7 +1230,7 @@ describe('RippleAPI', function () {
       Account: address,
       TransactionType: 'PaymentChannelFund',
       Channel: 'C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198',
-      Amount: this.api.xrpToDrops('1') // or '1000000'
+      Amount: this.api.xdvToDrops('1') // or '1000000'
     }
 
     return this.api.prepareTransaction(txJSON, localInstructions).then(
@@ -1243,8 +1243,8 @@ describe('RippleAPI', function () {
       Account: address,
       TransactionType: 'PaymentChannelFund',
       Channel: 'C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198',
-      Amount: this.api.xrpToDrops('1'), // or '1000000'
-      Expiration: this.api.iso8601ToRippleTime('2017-02-17T15:04:57Z')
+      Amount: this.api.xdvToDrops('1'), // or '1000000'
+      Expiration: this.api.iso8601ToDivvyTime('2017-02-17T15:04:57Z')
     }
 
     return this.api.prepareTransaction(txJSON).then(
@@ -1278,8 +1278,8 @@ describe('RippleAPI', function () {
       Account: address,
       TransactionType: 'PaymentChannelClaim',
       Channel: 'C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198',
-      Balance: this.api.xrpToDrops('1'), // or '1000000'
-      Amount: this.api.xrpToDrops('1'), // or '1000000'
+      Balance: this.api.xdvToDrops('1'), // or '1000000'
+      Amount: this.api.xdvToDrops('1'), // or '1000000'
       Signature: '30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B',
       PublicKey: '32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A',
       Flags: 0
@@ -1300,8 +1300,8 @@ describe('RippleAPI', function () {
       Account: address,
       TransactionType: 'PaymentChannelClaim',
       Channel: 'C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198',
-      Balance: this.api.xrpToDrops('1'), // or 1000000
-      Amount: this.api.xrpToDrops('1'), // or 1000000
+      Balance: this.api.xdvToDrops('1'), // or 1000000
+      Amount: this.api.xdvToDrops('1'), // or 1000000
       Signature: '30440220718D264EF05CAED7C781FF6DE298DCAC68D002562C9BF3A07C1E721B420C0DAB02203A5A4779EF4D2CCC7BC3EF886676D803A9981B928D3B8ACA483B80ECA3CD7B9B',
       PublicKey: '32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A',
       Flags: 0
@@ -1483,7 +1483,7 @@ describe('RippleAPI', function () {
     assert.deepEqual(signature, responses.sign.signAs);
   });
 
-  it('sign - throws when Fee exceeds maxFeeXRP (in drops)', function () {
+  it('sign - throws when Fee exceeds maxFeeXDV (in drops)', function () {
     const secret = 'shsWGZcmZz6YsWWmcnpfr6fLTdtFV';
     const request = {
       "txJSON": "{\"Flags\":2147483648,\"TransactionType\":\"AccountSet\",\"Account\":\"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\"Domain\":\"726970706C652E636F6D\",\"LastLedgerSequence\":8820051,\"Fee\":\"2010000\",\"Sequence\":23,\"SigningPubKey\":\"02F89EAEC7667B30F33D0687BBA86C3FE2A08CCA40A9186C5BDE2DAA6FA97A37D8\"}",
@@ -1496,11 +1496,11 @@ describe('RippleAPI', function () {
     
     assert.throws(() => {
       this.api.sign(request.txJSON, secret)
-    }, /Fee" should not exceed "2000000"\. To use a higher fee, set `maxFeeXRP` in the RippleAPI constructor\./)
+    }, /Fee" should not exceed "2000000"\. To use a higher fee, set `maxFeeXDV` in the DivvyAPI constructor\./)
   });
 
-  it('sign - throws when Fee exceeds maxFeeXRP (in drops) - custom maxFeeXRP', function () {
-    this.api._maxFeeXRP = '1.9'
+  it('sign - throws when Fee exceeds maxFeeXDV (in drops) - custom maxFeeXDV', function () {
+    this.api._maxFeeXDV = '1.9'
     const secret = 'shsWGZcmZz6YsWWmcnpfr6fLTdtFV';
     const request = {
       "txJSON": "{\"Flags\":2147483648,\"TransactionType\":\"AccountSet\",\"Account\":\"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\"Domain\":\"726970706C652E636F6D\",\"LastLedgerSequence\":8820051,\"Fee\":\"2010000\",\"Sequence\":23,\"SigningPubKey\":\"02F89EAEC7667B30F33D0687BBA86C3FE2A08CCA40A9186C5BDE2DAA6FA97A37D8\"}",
@@ -1513,11 +1513,11 @@ describe('RippleAPI', function () {
     
     assert.throws(() => {
       this.api.sign(request.txJSON, secret)
-    }, /Fee" should not exceed "1900000"\. To use a higher fee, set `maxFeeXRP` in the RippleAPI constructor\./)
+    }, /Fee" should not exceed "1900000"\. To use a higher fee, set `maxFeeXDV` in the DivvyAPI constructor\./)
   });
 
-  it('sign - permits fee exceeding 2000000 drops when maxFeeXRP is higher than 2 XRP', function () {
-    this.api._maxFeeXRP = '2.1'
+  it('sign - permits fee exceeding 2000000 drops when maxFeeXDV is higher than 2 XDV', function () {
+    this.api._maxFeeXDV = '2.1'
     const secret = 'shsWGZcmZz6YsWWmcnpfr6fLTdtFV';
     const request = {
       "txJSON": "{\"Flags\":2147483648,\"TransactionType\":\"AccountSet\",\"Account\":\"r9cZA1mLK5R5Am25ArfXFmqgNwjZgnfk59\",\"Domain\":\"726970706C652E636F6D\",\"LastLedgerSequence\":8820051,\"Fee\":\"2010000\",\"Sequence\":23,\"SigningPubKey\":\"02F89EAEC7667B30F33D0687BBA86C3FE2A08CCA40A9186C5BDE2DAA6FA97A37D8\"}",
@@ -1547,9 +1547,9 @@ describe('RippleAPI', function () {
 
   it('submit - failure', function () {
     return this.api.submit('BAD').then(() => {
-      assert(false, 'Should throw RippledError');
+      assert(false, 'Should throw DivvydError');
     }).catch(error => {
-      assert(error instanceof this.api.errors.RippledError);
+      assert(error instanceof this.api.errors.DivvydError);
       assert.strictEqual(error.data.resultCode, 'temBAD_FEE');
     });
   });
@@ -1600,7 +1600,7 @@ describe('RippleAPI', function () {
     }, /txJSON is not the same for all signedTransactions/);
   });
 
-  describe('RippleAPI', function () {
+  describe('DivvyAPI', function () {
 
     it('getBalances', function () {
       return this.api.getBalances(address).then(
@@ -2123,14 +2123,14 @@ describe('RippleAPI', function () {
     });
   });
 
-  // this is the case where core.RippleError just falls
+  // this is the case where core.DivvyError just falls
   // through the api to the user
   it('getTransactions - error', function () {
     const options = { types: ['payment', 'order'], initiated: true, limit: 13 };
     return this.api.getTransactions(address, options).then(() => {
-      assert(false, 'Should throw RippleError');
+      assert(false, 'Should throw DivvyError');
     }).catch(error => {
-      assert(error instanceof this.api.errors.RippleError);
+      assert(error instanceof this.api.errors.DivvyError);
     });
   });
 
@@ -2294,15 +2294,15 @@ describe('RippleAPI', function () {
       return Promise.all(
         [
           this.api.request('book_offers', {
-            taker_gets: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.base),
-            taker_pays: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
+            taker_gets: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.base),
+            taker_pays: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
             ledger_index: 'validated',
             limit: 20,
             taker: address
           }),
           this.api.request('book_offers', {
-            taker_gets: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
-            taker_pays: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.base),
+            taker_gets: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
+            taker_pays: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.base),
             ledger_index: 'validated',
             limit: 20,
             taker: address
@@ -2311,34 +2311,34 @@ describe('RippleAPI', function () {
       ).then((directOfferResults, reverseOfferResults) => {
         const directOffers = (directOfferResults ? directOfferResults : []).reduce((acc, res) => acc.concat(res.offers), [])
         const reverseOffers = (reverseOfferResults ? reverseOfferResults : []).reduce((acc, res) => acc.concat(res.offers), [])
-        const orderbook = RippleAPI.formatBidsAndAsks(orderbookInfo, [...directOffers, ...reverseOffers]);
+        const orderbook = DivvyAPI.formatBidsAndAsks(orderbookInfo, [...directOffers, ...reverseOffers]);
         assert.deepEqual(orderbook, responses.getOrderbook.normal);
       });
     });
 
-    it('with XRP', function () {
+    it('with XDV', function () {
       const orderbookInfo = {
         "base": {
           "currency": "USD",
           "counterparty": "rp8rJYTpodf8qbSCHVTNacf8nSW8mRakFw"
         },
         "counter": {
-          "currency": "XRP"
+          "currency": "XDV"
         }
       };
 
       return Promise.all(
         [
           this.api.request('book_offers', {
-            taker_gets: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.base),
-            taker_pays: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
+            taker_gets: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.base),
+            taker_pays: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
             ledger_index: 'validated',
             limit: 20,
             taker: address
           }),
           this.api.request('book_offers', {
-            taker_gets: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
-            taker_pays: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.base),
+            taker_gets: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
+            taker_pays: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.base),
             ledger_index: 'validated',
             limit: 20,
             taker: address
@@ -2347,8 +2347,8 @@ describe('RippleAPI', function () {
       ).then((directOfferResults, reverseOfferResults) => {
         const directOffers = (directOfferResults ? directOfferResults : []).reduce((acc, res) => acc.concat(res.offers), [])
         const reverseOffers = (reverseOfferResults ? reverseOfferResults : []).reduce((acc, res) => acc.concat(res.offers), [])
-        const orderbook = RippleAPI.formatBidsAndAsks(orderbookInfo, [...directOffers, ...reverseOffers]);
-        assert.deepEqual(orderbook, responses.getOrderbook.withXRP);
+        const orderbook = DivvyAPI.formatBidsAndAsks(orderbookInfo, [...directOffers, ...reverseOffers]);
+        assert.deepEqual(orderbook, responses.getOrderbook.withXDV);
       });
     });
 
@@ -2382,10 +2382,10 @@ describe('RippleAPI', function () {
       return true;
     }
 
-    it('sample XRP/JPY book has orders sorted correctly', function () {
+    it('sample XDV/JPY book has orders sorted correctly', function () {
       const orderbookInfo = {
         "base": { // the first currency in pair
-          "currency": 'XRP'
+          "currency": 'XDV'
         },
         "counter": {
           "currency": 'JPY',
@@ -2398,31 +2398,31 @@ describe('RippleAPI', function () {
       return Promise.all(
         [
           this.api.request('book_offers', {
-            taker_gets: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.base),
-            taker_pays: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
+            taker_gets: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.base),
+            taker_pays: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
             ledger_index: 'validated',
-            limit: 400, // must match `test/fixtures/rippled/requests/1-taker_gets-XRP-taker_pays-JPY.json`
+            limit: 400, // must match `test/fixtures/divvyd/requests/1-taker_gets-XDV-taker_pays-JPY.json`
             taker: myAddress
           }),
           this.api.request('book_offers', {
-            taker_gets: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
-            taker_pays: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.base),
+            taker_gets: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
+            taker_pays: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.base),
             ledger_index: 'validated',
-            limit: 400, // must match `test/fixtures/rippled/requests/2-taker_gets-JPY-taker_pays-XRP.json`
+            limit: 400, // must match `test/fixtures/divvyd/requests/2-taker_gets-JPY-taker_pays-XDV.json`
             taker: myAddress
           })
         ]
       ).then((directOfferResults, reverseOfferResults) => {
         const directOffers = (directOfferResults ? directOfferResults : []).reduce((acc, res) => acc.concat(res.offers), [])
         const reverseOffers = (reverseOfferResults ? reverseOfferResults : []).reduce((acc, res) => acc.concat(res.offers), [])
-        const orderbook = RippleAPI.formatBidsAndAsks(orderbookInfo, [...directOffers, ...reverseOffers]);
+        const orderbook = DivvyAPI.formatBidsAndAsks(orderbookInfo, [...directOffers, ...reverseOffers]);
         assert.deepStrictEqual([], orderbook.bids);
         return checkSortingOfOrders(orderbook.asks);
       });
     });
 
-    it('sample USD/XRP book has orders sorted correctly', function () {
-      const orderbookInfo = { counter: { currency: 'XRP' },
+    it('sample USD/XDV book has orders sorted correctly', function () {
+      const orderbookInfo = { counter: { currency: 'XDV' },
       base: { currency: 'USD',
        counterparty: 'rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B' } };
 
@@ -2431,24 +2431,24 @@ describe('RippleAPI', function () {
       return Promise.all(
         [
           this.api.request('book_offers', {
-            taker_gets: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.base),
-            taker_pays: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
+            taker_gets: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.base),
+            taker_pays: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
             ledger_index: 'validated',
-            limit: 400, // must match `test/fixtures/rippled/requests/1-taker_gets-XRP-taker_pays-JPY.json`
+            limit: 400, // must match `test/fixtures/divvyd/requests/1-taker_gets-XDV-taker_pays-JPY.json`
             taker: myAddress
           }),
           this.api.request('book_offers', {
-            taker_gets: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
-            taker_pays: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.base),
+            taker_gets: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
+            taker_pays: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.base),
             ledger_index: 'validated',
-            limit: 400, // must match `test/fixtures/rippled/requests/2-taker_gets-JPY-taker_pays-XRP.json`
+            limit: 400, // must match `test/fixtures/divvyd/requests/2-taker_gets-JPY-taker_pays-XDV.json`
             taker: myAddress
           })
         ]
       ).then((directOfferResults, reverseOfferResults) => {
         const directOffers = (directOfferResults ? directOfferResults : []).reduce((acc, res) => acc.concat(res.offers), [])
         const reverseOffers = (reverseOfferResults ? reverseOfferResults : []).reduce((acc, res) => acc.concat(res.offers), [])
-        const orderbook = RippleAPI.formatBidsAndAsks(orderbookInfo, [...directOffers, ...reverseOffers]);
+        const orderbook = DivvyAPI.formatBidsAndAsks(orderbookInfo, [...directOffers, ...reverseOffers]);
         return checkSortingOfOrders(orderbook.bids) && checkSortingOfOrders(orderbook.asks);
       });
     });
@@ -2468,15 +2468,15 @@ describe('RippleAPI', function () {
       return Promise.all(
         [
           this.api.request('book_offers', {
-            taker_gets: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.base),
-            taker_pays: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
+            taker_gets: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.base),
+            taker_pays: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
             ledger_index: 'validated',
             limit: 20,
             taker: address
           }),
           this.api.request('book_offers', {
-            taker_gets: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
-            taker_pays: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.base),
+            taker_gets: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
+            taker_pays: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.base),
             ledger_index: 'validated',
             limit: 20,
             taker: address
@@ -2485,7 +2485,7 @@ describe('RippleAPI', function () {
       ).then((directOfferResults, reverseOfferResults) => {
         const directOffers = (directOfferResults ? directOfferResults : []).reduce((acc, res) => acc.concat(res.offers), [])
         const reverseOffers = (reverseOfferResults ? reverseOfferResults : []).reduce((acc, res) => acc.concat(res.offers), [])
-        const orderbook = RippleAPI.formatBidsAndAsks(orderbookInfo, [...directOffers, ...reverseOffers]);
+        const orderbook = DivvyAPI.formatBidsAndAsks(orderbookInfo, [...directOffers, ...reverseOffers]);
         
         const bidRates = orderbook.bids.map(bid => bid.properties.makerExchangeRate);
         const askRates = orderbook.asks.map(ask => ask.properties.makerExchangeRate);
@@ -2512,15 +2512,15 @@ describe('RippleAPI', function () {
       return Promise.all(
         [
           this.api.request('book_offers', {
-            taker_gets: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.base),
-            taker_pays: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
+            taker_gets: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.base),
+            taker_pays: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
             ledger_index: 'validated',
             limit: 20,
             taker: address
           }),
           this.api.request('book_offers', {
-            taker_gets: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
-            taker_pays: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.base),
+            taker_gets: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
+            taker_pays: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.base),
             ledger_index: 'validated',
             limit: 20,
             taker: address
@@ -2529,7 +2529,7 @@ describe('RippleAPI', function () {
       ).then((directOfferResults, reverseOfferResults) => {
         const directOffers = (directOfferResults ? directOfferResults : []).reduce((acc, res) => acc.concat(res.offers), [])
         const reverseOffers = (reverseOfferResults ? reverseOfferResults : []).reduce((acc, res) => acc.concat(res.offers), [])
-        const orderbook = RippleAPI.formatBidsAndAsks(orderbookInfo, [...directOffers, ...reverseOffers]);
+        const orderbook = DivvyAPI.formatBidsAndAsks(orderbookInfo, [...directOffers, ...reverseOffers]);
         
         const orders = _.flatten([orderbook.bids, orderbook.asks]);
         _.forEach(orders, order => {
@@ -2559,15 +2559,15 @@ describe('RippleAPI', function () {
       return Promise.all(
         [
           this.api.request('book_offers', {
-            taker_gets: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.base),
-            taker_pays: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
+            taker_gets: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.base),
+            taker_pays: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
             ledger_index: 'validated',
             limit: 20,
             taker: address
           }),
           this.api.request('book_offers', {
-            taker_gets: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
-            taker_pays: RippleAPI.renameCounterpartyToIssuer(orderbookInfo.base),
+            taker_gets: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.counter),
+            taker_pays: DivvyAPI.renameCounterpartyToIssuer(orderbookInfo.base),
             ledger_index: 'validated',
             limit: 20,
             taker: address
@@ -2576,7 +2576,7 @@ describe('RippleAPI', function () {
       ).then((directOfferResults, reverseOfferResults) => {
         const directOffers = (directOfferResults ? directOfferResults : []).reduce((acc, res) => acc.concat(res.offers), [])
         const reverseOffers = (reverseOfferResults ? reverseOfferResults : []).reduce((acc, res) => acc.concat(res.offers), [])
-        const orderbook = RippleAPI.formatBidsAndAsks(orderbookInfo, [...directOffers, ...reverseOffers]);
+        const orderbook = DivvyAPI.formatBidsAndAsks(orderbookInfo, [...directOffers, ...reverseOffers]);
         
         assert(
           _.every(orderbook.bids, bid => bid.specification.direction === 'buy'));
@@ -2605,9 +2605,9 @@ describe('RippleAPI', function () {
       });
     });
 
-    it('with XRP', function () {
-      return this.api.getOrderbook(address, requests.getOrderbook.withXRP).then(
-        _.partial(checkResult, responses.getOrderbook.withXRP, 'getOrderbook'));
+    it('with XDV', function () {
+      return this.api.getOrderbook(address, requests.getOrderbook.withXDV).then(
+        _.partial(checkResult, responses.getOrderbook.withXDV, 'getOrderbook'));
     });
 
     function checkSortingOfOrders(orders) {
@@ -2640,10 +2640,10 @@ describe('RippleAPI', function () {
       return true;
     }
 
-    it('sample XRP/JPY book has orders sorted correctly', function () {
+    it('sample XDV/JPY book has orders sorted correctly', function () {
       const orderbookInfo = {
         "base": { // the first currency in pair
-          "currency": 'XRP'
+          "currency": 'XDV'
         },
         "counter": {
           "currency": 'JPY',
@@ -2659,8 +2659,8 @@ describe('RippleAPI', function () {
       });
     });
 
-    it('sample USD/XRP book has orders sorted correctly', function () {
-      const orderbookInfo = { counter: { currency: 'XRP' },
+    it('sample USD/XDV book has orders sorted correctly', function () {
+      const orderbookInfo = { counter: { currency: 'XDV' },
       base: { currency: 'USD',
        counterparty: 'rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B' } };
 
@@ -2735,7 +2735,7 @@ describe('RippleAPI', function () {
     return this.api.getPaymentChannel(channelId).then(() => {
       assert(false, 'Should throw entryNotFound');
     }).catch(error => {
-      assert(error instanceof this.api.errors.RippledError);
+      assert(error instanceof this.api.errors.DivvydError);
       assert(_.includes(error.message, 'entryNotFound'));
     });
   });
@@ -2766,7 +2766,7 @@ describe('RippleAPI', function () {
     return this.api.getServerInfo().then(() => {
       assert(false, 'Should throw NetworkError');
     }).catch(error => {
-      assert(error instanceof this.api.errors.RippledError);
+      assert(error instanceof this.api.errors.DivvydError);
       assert(_.includes(error.message, 'slowDown'));
     });
   });
@@ -2808,10 +2808,10 @@ describe('RippleAPI', function () {
     });
   });
 
-  it('getFee - high load_factor with custom maxFeeXRP', function () {
-    // Ensure that overriding with high maxFeeXRP of '51540' causes no errors.
+  it('getFee - high load_factor with custom maxFeeXDV', function () {
+    // Ensure that overriding with high maxFeeXDV of '51540' causes no errors.
     // (fee will actually be 51539.607552)
-    this.api._maxFeeXRP = '51540'
+    this.api._maxFeeXDV = '51540'
     this.api.connection._send(JSON.stringify({
       command: 'config',
       data: { highLoadFactor: true }
@@ -2822,7 +2822,7 @@ describe('RippleAPI', function () {
     });
   });
 
-  it('fee - default maxFee of 2 XRP', function () {
+  it('fee - default maxFee of 2 XDV', function () {
     this.api._feeCushion = 1000000;
 
     const expectedResponse = {
@@ -2839,9 +2839,9 @@ describe('RippleAPI', function () {
         _.partial(checkResult, expectedResponse, 'prepare'));
   });
 
-  it('fee - capped to maxFeeXRP when maxFee exceeds maxFeeXRP', function () {
+  it('fee - capped to maxFeeXDV when maxFee exceeds maxFeeXDV', function () {
     this.api._feeCushion = 1000000
-    this.api._maxFeeXRP = '3'
+    this.api._maxFeeXDV = '3'
     const localInstructions = _.defaults({
       maxFee: '4'
     }, instructions);
@@ -2862,7 +2862,7 @@ describe('RippleAPI', function () {
 
   it('fee - capped to maxFee', function () {
     this.api._feeCushion = 1000000
-    this.api._maxFeeXRP = '5'
+    this.api._maxFeeXDV = '5'
     const localInstructions = _.defaults({
       maxFee: '4'
     }, instructions);
@@ -2927,7 +2927,7 @@ describe('RippleAPI', function () {
 
   it('getPaths', function () {
     return this.api.getPaths(requests.getPaths.normal).then(
-      _.partial(checkResult, responses.getPaths.XrpToUsd, 'getPaths'));
+      _.partial(checkResult, responses.getPaths.XdvToUsd, 'getPaths'));
   });
 
   it('getPaths - result path has source_amount in drops', function () {
@@ -2935,8 +2935,8 @@ describe('RippleAPI', function () {
       source: {
         address: 'rB2NTuTTS3eNCsWxZYzJ4wqRqxNLZqA9Vx',
         amount: {
-          value: this.api.dropsToXrp(1000000),
-          currency: 'XRP'
+          value: this.api.dropsToXdv(1000000),
+          currency: 'XDV'
         }
       },
       destination: {
@@ -2952,7 +2952,7 @@ describe('RippleAPI', function () {
           "source": {
             "address": "rB2NTuTTS3eNCsWxZYzJ4wqRqxNLZqA9Vx",
             "amount": {
-              "currency": "XRP",
+              "currency": "XDV",
               "value": "1"
             }
           },
@@ -2973,26 +2973,26 @@ describe('RippleAPI', function () {
     return Promise.all([
       this.api.getPaths(requests.getPaths.normal),
       this.api.getPaths(requests.getPaths.UsdToUsd),
-      this.api.getPaths(requests.getPaths.XrpToXrp)
+      this.api.getPaths(requests.getPaths.XdvToXdv)
     ]).then(results => {
-      checkResult(responses.getPaths.XrpToUsd, 'getPaths', results[0]);
+      checkResult(responses.getPaths.XdvToUsd, 'getPaths', results[0]);
       checkResult(responses.getPaths.UsdToUsd, 'getPaths', results[1]);
-      checkResult(responses.getPaths.XrpToXrp, 'getPaths', results[2]);
+      checkResult(responses.getPaths.XdvToXdv, 'getPaths', results[2]);
     });
   });
 
   // @TODO
-  // need decide what to do with currencies/XRP:
-  // if add 'XRP' in currencies, then there will be exception in
-  // xrpToDrops function (called from toRippledAmount)
+  // need decide what to do with currencies/XDV:
+  // if add 'XDV' in currencies, then there will be exception in
+  // xdvToDrops function (called from toDivvydAmount)
   it('getPaths USD 2 USD', function () {
     return this.api.getPaths(requests.getPaths.UsdToUsd).then(
       _.partial(checkResult, responses.getPaths.UsdToUsd, 'getPaths'));
   });
 
-  it('getPaths XRP 2 XRP', function () {
-    return this.api.getPaths(requests.getPaths.XrpToXrp).then(
-      _.partial(checkResult, responses.getPaths.XrpToXrp, 'getPaths'));
+  it('getPaths XDV 2 XDV', function () {
+    return this.api.getPaths(requests.getPaths.XdvToXdv).then(
+      _.partial(checkResult, responses.getPaths.XdvToXdv, 'getPaths'));
   });
 
   it('getPaths - source with issuer', function () {
@@ -3003,8 +3003,8 @@ describe('RippleAPI', function () {
     });
   });
 
-  it('getPaths - XRP 2 XRP - not enough', function () {
-    return this.api.getPaths(requests.getPaths.XrpToXrpNotEnough).then(() => {
+  it('getPaths - XDV 2 XDV - not enough', function () {
+    return this.api.getPaths(requests.getPaths.XdvToXdvNotEnough).then(() => {
       assert(false, 'Should throw NotFoundError');
     }).catch(error => {
       assert(error instanceof this.api.errors.NotFoundError);
@@ -3055,7 +3055,7 @@ describe('RippleAPI', function () {
     const pathfind = _.assign({}, requests.getPaths.normal,
       { source: { address: addresses.NOTFOUND } });
     return this.api.getPaths(pathfind).catch(error => {
-      assert(error instanceof this.api.errors.RippleError);
+      assert(error instanceof this.api.errors.DivvyError);
     });
   });
 
@@ -3284,10 +3284,10 @@ describe('RippleAPI', function () {
       });
   });
 
-  it('RippleError with data', function () {
-    const error = new this.api.errors.RippleError('_message_', '_data_');
+  it('DivvyError with data', function () {
+    const error = new this.api.errors.DivvyError('_message_', '_data_');
     assert.strictEqual(error.toString(),
-      '[RippleError(_message_, \'_data_\')]');
+      '[DivvyError(_message_, \'_data_\')]');
   });
 
   it('NotFoundError default message', function () {
@@ -3296,10 +3296,10 @@ describe('RippleAPI', function () {
       '[NotFoundError(Not found)]');
   });
 
-  it('common utils - toRippledAmount', function () {
+  it('common utils - toDivvydAmount', function () {
     const amount = { issuer: 'is', currency: 'c', value: 'v' };
 
-    assert.deepEqual(utils.common.toRippledAmount(amount), {
+    assert.deepEqual(utils.common.toDivvydAmount(amount), {
       issuer: 'is', currency: 'c', value: 'v'
     });
   });
@@ -3426,9 +3426,9 @@ describe('RippleAPI', function () {
   });
 });
 
-describe('RippleAPI - offline', function () {
+describe('DivvyAPI - offline', function () {
   it('prepareSettings and sign', function () {
-    const api = new RippleAPI();
+    const api = new DivvyAPI();
     const secret = 'shsWGZcmZz6YsWWmcnpfr6fLTdtFV';
     const settings = requests.prepareSettings.domain;
     const instructions = {
@@ -3444,7 +3444,7 @@ describe('RippleAPI - offline', function () {
   });
 
   it('getServerInfo - offline', function () {
-    const api = new RippleAPI();
+    const api = new DivvyAPI();
     return api.getServerInfo().then(() => {
       assert(false, 'Should throw error');
     }).catch(error => {
@@ -3453,7 +3453,7 @@ describe('RippleAPI - offline', function () {
   });
 
   it('computeLedgerHash', function () {
-    const api = new RippleAPI();
+    const api = new DivvyAPI();
     const header = requests.computeLedgerHash.header;
     const ledgerHash = api.computeLedgerHash(header);
     assert.strictEqual(ledgerHash,
@@ -3461,7 +3461,7 @@ describe('RippleAPI - offline', function () {
   });
 
   it('computeLedgerHash - with transactions', function () {
-    const api = new RippleAPI();
+    const api = new DivvyAPI();
     const header = _.omit(requests.computeLedgerHash.header,
       'transactionHash');
     header.rawTransactions = JSON.stringify(
@@ -3472,7 +3472,7 @@ describe('RippleAPI - offline', function () {
   });
 
   it('computeLedgerHash - incorrent transaction_hash', function () {
-    const api = new RippleAPI();
+    const api = new DivvyAPI();
     const header = _.assign({}, requests.computeLedgerHash.header,
       {
         transactionHash:
@@ -3484,21 +3484,21 @@ describe('RippleAPI - offline', function () {
   });
 
   /* eslint-disable no-unused-vars */
-  it('RippleAPI - implicit server port', function () {
-    const api = new RippleAPI({ server: 'wss://s1.ripple.com' });
+  it('DivvyAPI - implicit server port', function () {
+    const api = new DivvyAPI({ server: 'wss://s1.divvy.com' });
   });
   /* eslint-enable no-unused-vars */
-  it('RippleAPI invalid options', function () {
-    assert.throws(() => new RippleAPI({ invalid: true }));
+  it('DivvyAPI invalid options', function () {
+    assert.throws(() => new DivvyAPI({ invalid: true }));
   });
 
-  it('RippleAPI valid options', function () {
-    const api = new RippleAPI({ server: 'wss://s:1' });
+  it('DivvyAPI valid options', function () {
+    const api = new DivvyAPI({ server: 'wss://s:1' });
     assert.deepEqual(api.connection._url, 'wss://s:1');
   });
 
-  it('RippleAPI invalid server uri', function () {
-    assert.throws(() => new RippleAPI({ server: 'wss//s:1' }));
+  it('DivvyAPI invalid server uri', function () {
+    assert.throws(() => new DivvyAPI({ server: 'wss//s:1' }));
   });
 
 });

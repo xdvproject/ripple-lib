@@ -5,26 +5,26 @@
   "properties": {
     "trace": {
       "type": "boolean",
-      "description": "If true, log rippled requests and responses to stdout."
+      "description": "If true, log divvyd requests and responses to stdout."
     },
     "feeCushion": {
       "type": "number",
       "minimum": 1,
       "description": "Factor to multiply estimated fee by to provide a cushion in case the required fee rises during submission of a transaction. Defaults to `1.2`."
     },
-    "maxFeeXRP": {
+    "maxFeeXDV": {
       "type": "string",
-      "description": "Maximum fee to use with transactions, in XRP. Must be a string-encoded number. Defaults to `'2'`."
+      "description": "Maximum fee to use with transactions, in XDV. Must be a string-encoded number. Defaults to `'2'`."
     },
     "server": {
       "type": "string",
-      "description": "URI for rippled websocket port to connect to. Must start with `wss://`, `ws://`, `wss+unix://`, or `ws+unix://`.",
+      "description": "URI for divvyd websocket port to connect to. Must start with `wss://`, `ws://`, `wss+unix://`, or `ws+unix://`.",
       "format": "uri",
       "pattern": "^(wss?|wss?\\+unix)://"
     },
     "proxy": {
       "format": "uri",
-      "description": "URI for HTTP/HTTPS proxy to use to connect to the rippled server."
+      "description": "URI for HTTP/HTTPS proxy to use to connect to the divvyd server."
     },
     "timeout": {
       "type": "integer",
@@ -37,7 +37,7 @@
     },
     "authorization": {
       "type": "string",
-      "description": "Username and password for HTTP basic authentication to the rippled server in the format **username:password**."
+      "description": "Username and password for HTTP basic authentication to the divvyd server in the format **username:password**."
     },
     "trustedCertificates": {
       "type": "array",

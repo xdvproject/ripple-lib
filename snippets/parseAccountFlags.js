@@ -1,5 +1,5 @@
-const RippleAPI = require('../dist/npm').RippleAPI
-const api = new RippleAPI({server: 'wss://s.altnet.rippletest.net:51233'})
+const DivvyAPI = require('../dist/npm').DivvyAPI
+const api = new DivvyAPI({server: 'wss://s.altnet.divvytest.net:51233'})
 
 parseAccountFlags()
 

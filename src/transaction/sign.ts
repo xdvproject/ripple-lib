@@ -1,11 +1,11 @@
 import * as utils from './utils'
-import keypairs = require('ripple-keypairs')
-import binary = require('ripple-binary-codec')
-import {computeBinaryTransactionHash} from 'ripple-hashes'
+import keypairs = require('divvy-keypairs')
+import binary = require('divvy-binary-codec')
+import {computeBinaryTransactionHash} from 'divvy-hashes'
 import {SignOptions, KeyPair} from './types'
 import {BigNumber} from 'bignumber.js'
-import {xrpToDrops} from '../common'
-import {RippleAPI} from '../api'
+import {xdvToDrops} from '../common'
+import {DivvyAPI} from '../api'
 const validate = utils.common.validate
 
 function computeSignature(tx: object, privateKey: string, signAs?: string) {
@@ -16,7 +16,7 @@ function computeSignature(tx: object, privateKey: string, signAs?: string) {
 }
 
 function signWithKeypair(
-  api: RippleAPI,
+  api: DivvyAPI,
   txJSON: string,
   keypair: KeyPair,
   options: SignOptions = {
@@ -33,11 +33,11 @@ function signWithKeypair(
   }
 
   const fee = new BigNumber(tx.Fee)
-  const maxFeeDrops = xrpToDrops(api._maxFeeXRP)
+  const maxFeeDrops = xdvToDrops(api._maxFeeXDV)
   if (fee.greaterThan(maxFeeDrops)) {
     throw new utils.common.errors.ValidationError(
       `"Fee" should not exceed "${maxFeeDrops}". ` +
-      'To use a higher fee, set `maxFeeXRP` in the RippleAPI constructor.'
+      'To use a higher fee, set `maxFeeXDV` in the DivvyAPI constructor.'
     )
   }
 
@@ -62,7 +62,7 @@ function signWithKeypair(
 }
 
 function sign(
-  this: RippleAPI,
+  this: DivvyAPI,
   txJSON: string,
   secret?: any,
   options?: SignOptions,

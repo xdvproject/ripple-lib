@@ -43,9 +43,9 @@ export interface ServerInfoResponse {
 
 export interface LedgerInfo {
   age: number,
-  base_fee_xrp: number,
+  base_fee_xdv: number,
   hash: string,
-  reserve_base_xrp: number,
-  reserve_inc_xrp: number,
+  reserve_base_xdv: number,
+  reserve_inc_xdv: number,
   seq: number,
 }

@@ -1,5 +1,5 @@
 import {SignerEntry} from './index'
-import {Amount, RippledAmount} from './amounts'
+import {Amount, DivvydAmount} from './amounts'
 
 export interface AccountRootLedgerEntry {
   LedgerEntryType: 'AccountRoot',
@@ -116,8 +116,8 @@ export interface OfferLedgerEntry {
   Flags: number,
   Account: string,
   Sequence: number,
-  TakerPays: RippledAmount,
-  TakerGets: RippledAmount,
+  TakerPays: DivvydAmount,
+  TakerGets: DivvydAmount,
   BookDirectory: string,
   BookNode: string,
   OwnerNode: string,
@@ -145,8 +145,8 @@ export interface PayChannelLedgerEntry {
   index: string
 }
 
-export interface RippleStateLedgerEntry {
-  LedgerEntryType: 'RippleState',
+export interface DivvyStateLedgerEntry {
+  LedgerEntryType: 'DivvyState',
   Flags: number,
   Balance: Amount,
   LowLimit: Amount,
@@ -171,7 +171,7 @@ export interface SignerListLedgerEntry {
   PreviousTxnLgrSeq: number
 }
 
-// see https://ripple.com/build/ledger-format/#ledger-object-types
+// see https://xdv.io/build/ledger-format/#ledger-object-types
 export type LedgerEntry =
   AccountRootLedgerEntry |
   AmendmentsLedgerEntry |
@@ -185,5 +185,5 @@ export type LedgerEntry =
   LedgerHashesLedgerEntry |
   OfferLedgerEntry |
   PayChannelLedgerEntry |
-  RippleStateLedgerEntry |
+  DivvyStateLedgerEntry |
   SignerListLedgerEntry

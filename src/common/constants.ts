@@ -1,13 +1,13 @@
 
 import {txFlagIndices} from './txflags'
 
-// Ordering from https://developers.ripple.com/accountroot.html
+// Ordering from https://developers.xdv.io/accountroot.html
 const accountRootFlags = {
 
-  // lsfDefaultRipple:
+  // lsfDefaultDivvy:
   // Enable rippling on trust lines by default.
   // Required for issuing addresses; discouraged for others.
-  DefaultRipple: 0x00800000,
+  DefaultDivvy: 0x00800000,
 
   // lsfDepositAuth:
   // Require account to auth deposits.
@@ -20,10 +20,10 @@ const accountRootFlags = {
   // Disallows use of the master key.
   DisableMaster: 0x00100000,
 
-  // lsfDisallowXRP:
-  // Disallow sending XRP.
-  // Not enforced by rippled; client applications should check.
-  DisallowXRP: 0x00080000,
+  // lsfDisallowXDV:
+  // Disallow sending XDV.
+  // Not enforced by divvyd; client applications should check.
+  DisallowXDV: 0x00080000,
 
   // lsfGlobalFreeze:
   // Trustlines globally frozen.
@@ -53,23 +53,23 @@ const AccountFlags = {
   requireDestinationTag: accountRootFlags.RequireDestTag,
   requireAuthorization: accountRootFlags.RequireAuth,
   depositAuth: accountRootFlags.DepositAuth,
-  disallowIncomingXRP: accountRootFlags.DisallowXRP,
+  disallowIncomingXDV: accountRootFlags.DisallowXDV,
   disableMasterKey: accountRootFlags.DisableMaster,
   noFreeze: accountRootFlags.NoFreeze,
   globalFreeze: accountRootFlags.GlobalFreeze,
-  defaultRipple: accountRootFlags.DefaultRipple
+  defaultDivvy: accountRootFlags.DefaultDivvy
 }
 
 const AccountFlagIndices = {
   requireDestinationTag: txFlagIndices.AccountSet.asfRequireDest,
   requireAuthorization: txFlagIndices.AccountSet.asfRequireAuth,
   depositAuth: txFlagIndices.AccountSet.asfDepositAuth,
-  disallowIncomingXRP: txFlagIndices.AccountSet.asfDisallowXRP,
+  disallowIncomingXDV: txFlagIndices.AccountSet.asfDisallowXDV,
   disableMasterKey: txFlagIndices.AccountSet.asfDisableMaster,
   enableTransactionIDTracking: txFlagIndices.AccountSet.asfAccountTxnID,
   noFreeze: txFlagIndices.AccountSet.asfNoFreeze,
   globalFreeze: txFlagIndices.AccountSet.asfGlobalFreeze,
-  defaultRipple: txFlagIndices.AccountSet.asfDefaultRipple
+  defaultDivvy: txFlagIndices.AccountSet.asfDefaultDivvy
 }
 
 const AccountFields = {

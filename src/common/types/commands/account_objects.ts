@@ -1,5 +1,5 @@
 import {
-  CheckLedgerEntry, RippleStateLedgerEntry,
+  CheckLedgerEntry, DivvyStateLedgerEntry,
   OfferLedgerEntry, SignerListLedgerEntry,
   EscrowLedgerEntry, PayChannelLedgerEntry,
   DepositPreauthLedgerEntry
@@ -52,7 +52,7 @@ export interface AccountObjectsResponse {
   // from the getAccountObjects section of the dev center
   account_objects: Array<
     CheckLedgerEntry |
-    RippleStateLedgerEntry |
+    DivvyStateLedgerEntry |
     OfferLedgerEntry |
     SignerListLedgerEntry |
     EscrowLedgerEntry |

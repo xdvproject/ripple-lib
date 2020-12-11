@@ -3,7 +3,7 @@ import parseFields from './parse/fields'
 import {validate, constants} from '../common'
 import {FormattedSettings} from '../common/types/objects'
 import {AccountInfoResponse} from '../common/types/commands'
-import {RippleAPI} from '../api'
+import {DivvyAPI} from '../api'
 const AccountFlags = constants.AccountFlags
 
 export type SettingsOptions = {
@@ -34,7 +34,7 @@ function formatSettings(response: AccountInfoResponse) {
 }
 
 export async function getSettings(
-  this: RippleAPI, address: string, options: SettingsOptions = {}
+  this: DivvyAPI, address: string, options: SettingsOptions = {}
 ): Promise<FormattedSettings> {
   // 1. Validate
   validate.getSettings({address, options})

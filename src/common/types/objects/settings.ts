@@ -11,10 +11,10 @@ export type Signers = {
 }
 
 export type FormattedSettings = {
-  defaultRipple?: boolean,
+  defaultDivvy?: boolean,
   depositAuth?: boolean,
   disableMasterKey?: boolean,
-  disallowIncomingXRP?: boolean,
+  disallowIncomingXDV?: boolean,
   domain?: string,
   emailHash?: string|null,
   enableTransactionIDTracking?: boolean,

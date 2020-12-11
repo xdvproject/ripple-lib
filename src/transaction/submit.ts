@@ -1,7 +1,7 @@
 import * as _ from 'lodash'
 import * as utils from './utils'
 import {validate} from '../common'
-import {RippleAPI} from '..'
+import {DivvyAPI} from '..'
 
 export interface FormattedSubmitResponse {
   resultCode: string,
@@ -31,13 +31,13 @@ function formatSubmitResponse(response): FormattedSubmitResponse {
     tx_json: response.tx_json
   }
   if (isImmediateRejection(response.engine_result)) {
-    throw new utils.common.errors.RippledError('Submit failed', data)
+    throw new utils.common.errors.DivvydError('Submit failed', data)
   }
   return data
 }
 
 async function submit(
-  this: RippleAPI, signedTransaction: string
+  this: DivvyAPI, signedTransaction: string
 ): Promise<FormattedSubmitResponse> {
   // 1. Validate
   validate.submit({signedTransaction})

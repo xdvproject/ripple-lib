@@ -3,7 +3,7 @@ import {
   FormattedPaymentChannel
 } from './parse/payment-channel'
 import {validate, errors} from '../common'
-import {RippleAPI} from '../api'
+import {DivvyAPI} from '../api'
 import {LedgerEntryResponse} from '../common/types/commands'
 const NotFoundError = errors.NotFoundError
 
@@ -18,7 +18,7 @@ function formatResponse(
 }
 
 async function getPaymentChannel(
-  this: RippleAPI, id: string
+  this: DivvyAPI, id: string
 ): Promise<FormattedPaymentChannel> {
   // 1. Validate
   validate.getPaymentChannel({id})

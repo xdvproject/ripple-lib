@@ -1,4 +1,4 @@
-import {deriveKeypair, deriveAddress} from 'ripple-keypairs'
+import {deriveKeypair, deriveAddress} from 'divvy-keypairs'
 
 export {
   deriveKeypair,

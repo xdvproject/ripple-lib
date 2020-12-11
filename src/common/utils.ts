@@ -1,7 +1,7 @@
 import * as _ from 'lodash'
 import BigNumber from 'bignumber.js'
-import {deriveKeypair} from 'ripple-keypairs'
-import {Amount, RippledAmount} from './types/objects'
+import {deriveKeypair} from 'divvy-keypairs'
+import {Amount, DivvydAmount} from './types/objects'
 import {ValidationError} from './errors'
 
 function isValidSecret(secret: string): boolean {
@@ -13,13 +13,13 @@ function isValidSecret(secret: string): boolean {
   }
 }
 
-function dropsToXrp(drops: string | BigNumber): string {
+function dropsToXdv(drops: string | BigNumber): string {
   if (typeof drops === 'string') {
     if (!drops.match(/^-?[0-9]*\.?[0-9]*$/)) {
-      throw new ValidationError(`dropsToXrp: invalid value '${drops}',` +
+      throw new ValidationError(`dropsToXdv: invalid value '${drops}',` +
         ` should be a number matching (^-?[0-9]*\.?[0-9]*$).`)
     } else if (drops === '.') {
-      throw new ValidationError(`dropsToXrp: invalid value '${drops}',` +
+      throw new ValidationError(`dropsToXdv: invalid value '${drops}',` +
         ` should be a BigNumber or string-encoded number.`)
     }
   }
@@ -31,7 +31,7 @@ function dropsToXrp(drops: string | BigNumber): string {
 
   // drops are only whole units
   if (drops.includes('.')) {
-    throw new ValidationError(`dropsToXrp: value '${drops}' has` +
+    throw new ValidationError(`dropsToXdv: value '${drops}' has` +
       ` too many decimal places.`)
   }
 
@@ -39,7 +39,7 @@ function dropsToXrp(drops: string | BigNumber): string {
   // validated above. This just ensures BigNumber did not do
   // something unexpected.
   if (!drops.match(/^-?[0-9]+$/)) {
-    throw new ValidationError(`dropsToXrp: failed sanity check -` +
+    throw new ValidationError(`dropsToXdv: failed sanity check -` +
       ` value '${drops}',` +
       ` does not match (^-?[0-9]+$).`)
   }
@@ -47,48 +47,48 @@ function dropsToXrp(drops: string | BigNumber): string {
   return (new BigNumber(drops)).dividedBy(1000000.0).toString(10)
 }
 
-function xrpToDrops(xrp: string | BigNumber): string {
-  if (typeof xrp === 'string') {
-    if (!xrp.match(/^-?[0-9]*\.?[0-9]*$/)) {
-      throw new ValidationError(`xrpToDrops: invalid value '${xrp}',` +
+function xdvToDrops(xdv: string | BigNumber): string {
+  if (typeof xdv === 'string') {
+    if (!xdv.match(/^-?[0-9]*\.?[0-9]*$/)) {
+      throw new ValidationError(`xdvToDrops: invalid value '${xdv}',` +
         ` should be a number matching (^-?[0-9]*\.?[0-9]*$).`)
-    } else if (xrp === '.') {
-      throw new ValidationError(`xrpToDrops: invalid value '${xrp}',` +
+    } else if (xdv === '.') {
+      throw new ValidationError(`xdvToDrops: invalid value '${xdv}',` +
         ` should be a BigNumber or string-encoded number.`)
     }
   }
 
   // Important: specify base 10 to avoid exponential notation, e.g. '1e-7'.
-  xrp = (new BigNumber(xrp)).toString(10)
+  xdv = (new BigNumber(xdv)).toString(10)
 
   // This should never happen; the value has already been
   // validated above. This just ensures BigNumber did not do
   // something unexpected.
-  if (!xrp.match(/^-?[0-9.]+$/)) {
-    throw new ValidationError(`xrpToDrops: failed sanity check -` +
-      ` value '${xrp}',` +
+  if (!xdv.match(/^-?[0-9.]+$/)) {
+    throw new ValidationError(`xdvToDrops: failed sanity check -` +
+      ` value '${xdv}',` +
       ` does not match (^-?[0-9.]+$).`)
   }
 
-  const components = xrp.split('.')
+  const components = xdv.split('.')
   if (components.length > 2) {
-    throw new ValidationError(`xrpToDrops: failed sanity check -` +
-      ` value '${xrp}' has` +
+    throw new ValidationError(`xdvToDrops: failed sanity check -` +
+      ` value '${xdv}' has` +
       ` too many decimal points.`)
   }
 
   const fraction = components[1] || '0'
   if (fraction.length > 6) {
-    throw new ValidationError(`xrpToDrops: value '${xrp}' has` +
+    throw new ValidationError(`xdvToDrops: value '${xdv}' has` +
       ` too many decimal places.`)
   }
 
-  return (new BigNumber(xrp)).times(1000000.0).floor().toString(10)
+  return (new BigNumber(xdv)).times(1000000.0).floor().toString(10)
 }
 
-function toRippledAmount(amount: Amount): RippledAmount {
-  if (amount.currency === 'XRP') {
-    return xrpToDrops(amount.value)
+function toDivvydAmount(amount: Amount): DivvydAmount {
+  if (amount.currency === 'XDV') {
+    return xdvToDrops(amount.value)
   }
   if (amount.currency === 'drops') {
     return amount.value
@@ -127,38 +127,38 @@ function removeUndefined<T extends object>(obj: T): T {
  * @return {Number} ms since unix epoch
  *
  */
-function rippleToUnixTimestamp(rpepoch: number): number {
+function divvyToUnixTimestamp(rpepoch: number): number {
   return (rpepoch + 0x386D4380) * 1000
 }
 
 /**
  * @param {Number|Date} timestamp (ms since unix epoch)
- * @return {Number} seconds since ripple epoch (1/1/2000 GMT)
+ * @return {Number} seconds since divvy epoch (1/1/2000 GMT)
  */
-function unixToRippleTimestamp(timestamp: number): number {
+function unixToDivvyTimestamp(timestamp: number): number {
   return Math.round(timestamp / 1000) - 0x386D4380
 }
 
-function rippleTimeToISO8601(rippleTime: number): string {
-  return new Date(rippleToUnixTimestamp(rippleTime)).toISOString()
+function divvyTimeToISO8601(divvyTime: number): string {
+  return new Date(divvyToUnixTimestamp(divvyTime)).toISOString()
 }
 
 /**
  * @param {string} iso8601 international standard date format
- * @return {number} seconds since ripple epoch (1/1/2000 GMT)
+ * @return {number} seconds since divvy epoch (1/1/2000 GMT)
  */
-function iso8601ToRippleTime(iso8601: string): number {
-  return unixToRippleTimestamp(Date.parse(iso8601))
+function iso8601ToDivvyTime(iso8601: string): number {
+  return unixToDivvyTimestamp(Date.parse(iso8601))
 }
 
 export {
-  dropsToXrp,
-  xrpToDrops,
-  toRippledAmount,
+  dropsToXdv,
+  xdvToDrops,
+  toDivvydAmount,
   convertKeysFromSnakeCaseToCamelCase,
   removeUndefined,
-  rippleTimeToISO8601,
-  iso8601ToRippleTime,
+  divvyTimeToISO8601,
+  iso8601ToDivvyTime,
   isValidSecret
 }
 

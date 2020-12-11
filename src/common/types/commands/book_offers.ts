@@ -1,6 +1,6 @@
 import {
   TakerRequestAmount,
-  RippledAmount,
+  DivvydAmount,
   OfferLedgerEntry
 } from '../objects'
 
@@ -25,6 +25,6 @@ export interface BookOffersResponse {
 export interface BookOffer extends OfferLedgerEntry {
   quality?: string
   owner_funds?: string,
-  taker_gets_funded?: RippledAmount,
-  taker_pays_funded?: RippledAmount
+  taker_gets_funded?: DivvydAmount,
+  taker_pays_funded?: DivvydAmount
 }

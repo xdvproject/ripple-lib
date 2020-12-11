@@ -1,8 +1,8 @@
-export {RippleAPI} from './api'
+export {DivvyAPI} from './api'
 
 export {
     FormattedTransactionType
 } from './transaction/types'
 
 // Broadcast api is experimental
-export {RippleAPIBroadcast} from './broadcast'
+export {DivvyAPIBroadcast} from './broadcast'

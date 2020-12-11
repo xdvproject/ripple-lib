@@ -1,20 +1,20 @@
-# ripple-lib
+# divvy-lib
 
-A JavaScript API for interacting with the XRP Ledger
+A JavaScript API for interacting with the XDV Ledger
 
-[![NPM](https://nodei.co/npm/ripple-lib.png)](https://www.npmjs.org/package/ripple-lib)
+[![NPM](https://nodei.co/npm/divvy-lib.png)](https://www.npmjs.org/package/divvy-lib)
 
 ### Features
 
-+ Connect to a `rippled` server from Node.js or a web browser
-+ Helpers for creating requests and parsing responses for the [rippled API](https://developers.ripple.com/rippled-api.html)
-+ Listen to events on the XRP Ledger (transactions, ledger, validations, etc.)
-+ Sign and submit transactions to the XRP Ledger
++ Connect to a `divvyd` server from Node.js or a web browser
++ Helpers for creating requests and parsing responses for the [divvyd API](https://developers.xdv.io/divvyd-api.html)
++ Listen to events on the XDV Ledger (transactions, ledger, validations, etc.)
++ Sign and submit transactions to the XDV Ledger
 + Type definitions for TypeScript
 
 ## Getting Started
 
-See also: [RippleAPI Beginners Guide](https://ripple.com/build/rippleapi-beginners-guide/)
+See also: [DivvyAPI Beginners Guide](https://xdv.io/build/divvyapi-beginners-guide/)
 
 ### Requirements
 
@@ -23,24 +23,24 @@ See also: [RippleAPI Beginners Guide](https://ripple.com/build/rippleapi-beginne
 
 ### Install
 
-In an existing project (with `package.json`), install `ripple-lib`:
+In an existing project (with `package.json`), install `divvy-lib`:
 ```
-$ yarn add ripple-lib
+$ yarn add divvy-lib
 ```
 
-Then see the [documentation](https://github.com/ripple/ripple-lib/blob/develop/docs/index.md) and [code samples](https://github.com/ripple/ripple-lib/tree/develop/docs/samples).
+Then see the [documentation](https://github.com/xdv/divvy-lib/blob/develop/docs/index.md) and [code samples](https://github.com/xdv/divvy-lib/tree/develop/docs/samples).
 
-**What is ripple-lib used for?** Here's a [list of applications](APPLICATIONS.md) that use `ripple-lib`. Open a PR to add your app or project to the list!
+**What is divvy-lib used for?** Here's a [list of applications](APPLICATIONS.md) that use `divvy-lib`. Open a PR to add your app or project to the list!
 
 ### Mailing Lists
 
-We have a low-traffic mailing list for announcements of new ripple-lib releases. (About 1 email per week)
+We have a low-traffic mailing list for announcements of new divvy-lib releases. (About 1 email per week)
 
-+ [Subscribe to ripple-lib-announce](https://groups.google.com/forum/#!forum/ripple-lib-announce)
++ [Subscribe to divvy-lib-announce](https://groups.google.com/forum/#!forum/divvy-lib-announce)
 
-If you're using the XRP Ledger in production, you should run a [rippled server](https://github.com/ripple/rippled) and subscribe to the ripple-server mailing list as well.
+If you're using the XDV Ledger in production, you should run a [divvyd server](https://github.com/xdv/divvyd) and subscribe to the divvy-server mailing list as well.
 
-+ [Subscribe to ripple-server](https://groups.google.com/forum/#!forum/ripple-server)
++ [Subscribe to divvy-server](https://groups.google.com/forum/#!forum/divvy-server)
 
 ## Development
 
@@ -74,4 +74,4 @@ The continuous integration tests require that the documentation stays up-to-date
 
 ## More Information
 
-+ [Ripple Developer Center](https://ripple.com/build/)
++ [Divvy Developer Center](https://xdv.io/build/)

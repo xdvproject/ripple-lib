@@ -16,7 +16,7 @@ export interface LedgerEntryRequest {
     account: string,
     seq: number
   },
-  ripple_state?: {
+  divvy_state?: {
     accounts: [string, string],
     currency: string
   },

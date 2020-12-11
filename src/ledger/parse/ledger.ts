@@ -1,5 +1,5 @@
 import * as _ from 'lodash'
-import {removeUndefined, rippleTimeToISO8601} from '../../common'
+import {removeUndefined, divvyTimeToISO8601} from '../../common'
 import parseTransaction from './transaction'
 import {Ledger} from '../../common/types/objects'
 
@@ -64,13 +64,13 @@ export function parseLedger(ledger: Ledger): FormattedLedger {
   return removeUndefined(Object.assign(
     {
       stateHash: ledger.account_hash,
-      closeTime: rippleTimeToISO8601(ledger.close_time),
+      closeTime: divvyTimeToISO8601(ledger.close_time),
       closeTimeResolution: ledger.close_time_resolution,
       closeFlags: ledger.close_flags,
       ledgerHash: ledger.hash || ledger.ledger_hash,
       ledgerVersion: ledgerVersion,
       parentLedgerHash: ledger.parent_hash,
-      parentCloseTime: rippleTimeToISO8601(ledger.parent_close_time),
+      parentCloseTime: divvyTimeToISO8601(ledger.parent_close_time),
       totalDrops: ledger.total_coins || ledger.totalCoins,
       transactionHash: ledger.transaction_hash
     },

@@ -19,7 +19,7 @@ import parseFeeUpdate from './fee-update'
 import parseAmendment from './amendment'
 
 function parseTransactionType(type) {
-  // Ordering matches https://developers.ripple.com/transaction-types.html
+  // Ordering matches https://developers.xdv.io/transaction-types.html
   const mapping = {
     AccountSet: 'settings',
     CheckCancel: 'checkCancel',

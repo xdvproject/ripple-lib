@@ -3,7 +3,7 @@ import {
   FormattedOrderSpecification,
   FormattedTrustline,
   Adjustment,
-  RippledAmount,
+  DivvydAmount,
   Memo,
   FormattedSettings
 } from '../common/types/objects'
@@ -44,8 +44,8 @@ export interface OfferCreateTransaction {
   Flags: number,
   LastLedgerSequence: number,
   Sequence: number,
-  TakerGets: RippledAmount,
-  TakerPays: RippledAmount,
+  TakerGets: DivvydAmount,
+  TakerPays: DivvydAmount,
   Expiration?: number,
   OfferSequence?: number,
   Memos: {Memo: ApiMemo}[]
@@ -87,7 +87,7 @@ export type FormattedPayment = {
   memos?: Array<Memo>,
   invoiceID?: string,
   allowPartialPayment?: boolean,
-  noDirectRipple?: boolean,
+  noDirectDivvy?: boolean,
   limitQuality?: boolean
 }
 
